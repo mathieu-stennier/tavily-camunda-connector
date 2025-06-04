@@ -1,0 +1,475 @@
+{
+  "$schema": "https://unpkg.com/@camunda/zeebe-element-templates-json-schema/resources/schema.json",
+  "name": "Tavily - Web search",
+  "id": "4ed7f520-6042-4c75-981a-5c8cfb5aaf16",
+  "version": 1747911605487,
+  "description": "Empowering your AI applications with real-time,\naccurate search results tailored for LLMs and RAG.",
+  "metadata": {
+    "keywords": []
+  },
+  "documentationRef": "https://docs.camunda.io/docs/components/connectors/protocol/rest/",
+  "category": {
+    "id": "connectors",
+    "name": "Connectors"
+  },
+  "appliesTo": [
+    "bpmn:Task"
+  ],
+  "elementType": {
+    "value": "bpmn:ServiceTask"
+  },
+  "groups": [
+    {
+      "id": "authentication",
+      "label": "Authentication"
+    },
+    {
+      "id": "search_configuration",
+      "label": "Search configuration"
+    },
+    {
+      "id": "search_result",
+      "label": "Search result"
+    },
+    {
+      "id": "timeout",
+      "label": "Connection timeout"
+    },
+    {
+      "id": "payload",
+      "label": "Payload"
+    },
+    {
+      "id": "output",
+      "label": "Output mapping"
+    },
+    {
+      "id": "error",
+      "label": "Error handling"
+    },
+    {
+      "id": "retries",
+      "label": "Retries"
+    }
+  ],
+  "properties": [
+    {
+      "value": "io.camunda:http-json:1",
+      "binding": {
+        "property": "type",
+        "type": "zeebe:taskDefinition"
+      },
+      "type": "Hidden"
+    },
+    {
+      "id": "authentication.type",
+      "label": "Type",
+      "description": "Choose the authentication type. Select 'None' if no authentication is necessary",
+      "value": "bearer",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.type",
+        "type": "zeebe:input"
+      },
+      "type": "Hidden",
+      "choices": [
+        {
+          "name": "API key",
+          "value": "apiKey"
+        },
+        {
+          "name": "Basic",
+          "value": "basic"
+        },
+        {
+          "name": "Bearer token",
+          "value": "bearer"
+        },
+        {
+          "name": "None",
+          "value": "noAuth"
+        },
+        {
+          "name": "OAuth 2.0",
+          "value": "oauth-client-credentials-flow"
+        }
+      ]
+    },
+    {
+      "id": "authentication.token",
+      "label": "Tavily API Bearer token",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "feel": "optional",
+      "group": "authentication",
+      "binding": {
+        "name": "authentication.token",
+        "type": "zeebe:input"
+      },
+      "condition": {
+        "property": "authentication.type",
+        "equals": "bearer",
+        "type": "simple"
+      },
+      "type": "String"
+    },
+    {
+      "id": "method",
+      "label": "Method",
+      "optional": false,
+      "value": "POST",
+      "constraints": {
+        "notEmpty": true
+      },
+      "group": "endpoint",
+      "binding": {
+        "name": "method",
+        "type": "zeebe:input"
+      },
+      "type": "Hidden"
+    },
+    {
+      "id": "url",
+      "label": "URL",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "group": "endpoint",
+      "binding": {
+        "name": "url",
+        "type": "zeebe:input"
+      },
+      "value": "https://api.tavily.com/search",
+      "type": "Hidden"
+    },
+    {
+      "id": "search_query",
+      "label": "Search query",
+      "type": "String",
+      "optional": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "feel": "optional",
+      "binding": {
+        "name": "search_query",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_topic",
+      "label": "Topic",
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "General",
+          "value": "general"
+        },
+        {
+          "name": "News",
+          "value": "news"
+        },
+        {
+          "name": "Finance",
+          "value": "finance"
+        }
+      ],
+      "value": "general",
+      "constraints": {
+        "notEmpty": true
+      },
+      "binding": {
+        "name": "search_topic",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_time_range",
+      "label": "Time range",
+      "type": "Hidden",
+      "tooltip": "The time range back from the current date to filter results. Useful when looking for sources that have published data.",
+      "optional": false,
+      "value": "none",
+      "condition": {
+        "property": "search_topic",
+        "oneOf": [
+          "news"
+        ]
+      },
+      "binding": {
+        "name": "search_time_range",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_time_range",
+      "label": "Time range",
+      "type": "Dropdown",
+      "tooltip": "The time range back from the current date to filter results. Useful when looking for sources that have published data.",
+      "choices": [
+        {
+          "name": "Day",
+          "value": "day"
+        },
+        {
+          "name": "Week",
+          "value": "week"
+        },
+        {
+          "name": "Month",
+          "value": "month"
+        },
+        {
+          "name": "Year",
+          "value": "year"
+        }
+      ],
+      "condition": {
+        "property": "search_topic",
+        "oneOf": [
+          "general",
+          "finance"
+        ]
+      },
+      "optional": true,
+      "value": "none",
+      "binding": {
+        "name": "search_time_range",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_news_number_of_days",
+      "label": "Number of days back to look for news",
+      "type": "Number",
+      "optional": false,
+      "value": 5,
+      "constraints": {
+        "notEmpty": true
+      },
+      "condition": {
+        "property": "search_topic",
+        "equals": "news"
+      },
+      "feel": "static",
+      "binding": {
+        "name": "search_max_result",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_depth",
+      "label": "Depth",
+      "tooltip": "Advanced search is tailored to retrieve the most relevant sources and content snippets for your query, while basic search provides generic content snippets from each source. A basic search costs 1 API Credit, while an advanced search costs 2 API Credits.",
+      "type": "Dropdown",
+      "choices": [
+        {
+          "name": "Basic",
+          "value": "basic"
+        },
+        {
+          "name": "Advanced",
+          "value": "advanced"
+        }
+      ],
+      "value": "basic",
+      "constraints": {
+        "notEmpty": true
+      },
+      "binding": {
+        "name": "search_depth",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_max_result",
+      "label": "Maximum search results",
+      "type": "Number",
+      "optional": false,
+      "value": 5,
+      "constraints": {
+        "notEmpty": true
+      },
+      "feel": "static",
+      "binding": {
+        "name": "search_max_result",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_include_domains",
+      "label": "Include domains",
+      "tooltip": "A list of domains to specifically include in the search results.",
+      "description": "list of domain ",
+      "type": "String",
+      "optional": true,
+      "feel": "required",
+      "binding": {
+        "name": "search_include_domains",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "search_excluded_domains",
+      "label": "Exclude domains",
+      "tooltip": "A list of domains to specifically exclude from the search results.",
+      "description": "list of domain ",
+      "type": "String",
+      "optional": true,
+      "feel": "required",
+      "binding": {
+        "name": "search_excluded_domains",
+        "type": "zeebe:input"
+      },
+      "group": "search_configuration"
+    },
+    {
+      "id": "response_includes_raw_content",
+      "label": "Include web page content",
+      "type": "Boolean",
+      "tooltip": "Include the cleaned and parsed HTML content of each search result.",
+      "choices": [
+        {
+          "name": "None",
+          "value": "none"
+        },
+        {
+          "name": "Day",
+          "value": "day"
+        },
+        {
+          "name": "Week",
+          "value": "week"
+        },
+        {
+          "name": "Month",
+          "value": "month"
+        },
+        {
+          "name": "Year",
+          "value": "year"
+        }
+      ],
+      "optional": false,
+      "value": false,
+      "constraints": {
+        "notEmpty": true
+      },
+      "binding": {
+        "name": "response_includes_raw_content",
+        "type": "zeebe:input"
+      },
+      "group": "search_result"
+    },
+    {
+      "id": "body",
+      "label": "Request body",
+      "description": "Payload to send with the request",
+      "optional": true,
+      "group": "payload",
+      "binding": {
+        "name": "body",
+        "type": "zeebe:input"
+      },
+      "condition": {
+        "property": "method",
+        "oneOf": [
+          "POST",
+          "PUT",
+          "PATCH"
+        ],
+        "type": "simple"
+      },
+      "type": "Hidden",
+      "value": "={\n  \"query\": search_query,\n  \"search_depth\": search_depth,\n  \"max_result\": search_max_result,\n  \"time_range\": search_time_range,\n  \"include_raw_content\": response_includes_raw_content,  \"include_domains\": search_include_domains,  \"exclude_domains\": search_exclude_domains,\n  \"days\": search_news_number_of_days\n}"
+    },
+    {
+      "id": "ignoreNullValues",
+      "label": "Ignore null values",
+      "optional": false,
+      "value": "=true",
+      "group": "payload",
+      "binding": {
+        "name": "ignoreNullValues",
+        "type": "zeebe:input"
+      },
+      "tooltip": "Null values will not be sent",
+      "type": "Hidden"
+    },
+    {
+      "id": "resultVariable",
+      "label": "Result variable",
+      "description": "Name of variable to store the response in",
+      "group": "output",
+      "binding": {
+        "key": "resultVariable",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "String",
+      "value": "webSearchResponse"
+    },
+    {
+      "id": "resultExpression",
+      "label": "Result expression",
+      "description": "Expression to map the response into process variables",
+      "feel": "required",
+      "group": "output",
+      "binding": {
+        "key": "resultExpression",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "Text"
+    },
+    {
+      "id": "errorExpression",
+      "label": "Error expression",
+      "description": "Expression to handle errors. Details in the <a href=\"https://docs.camunda.io/docs/components/connectors/use-connectors/\" target=\"_blank\">documentation</a>.",
+      "feel": "required",
+      "group": "error",
+      "binding": {
+        "key": "errorExpression",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "Text"
+    },
+    {
+      "id": "retryCount",
+      "label": "Retries",
+      "description": "Number of retries",
+      "value": "3",
+      "feel": "optional",
+      "group": "retries",
+      "binding": {
+        "property": "retries",
+        "type": "zeebe:taskDefinition"
+      },
+      "type": "String"
+    },
+    {
+      "id": "retryBackoff",
+      "label": "Retry backoff",
+      "description": "ISO-8601 duration to wait between retries",
+      "value": "PT0S",
+      "group": "retries",
+      "binding": {
+        "key": "retryBackoff",
+        "type": "zeebe:taskHeader"
+      },
+      "type": "String"
+    }
+  ],
+  "icon": {
+    "contents": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAMAAAC/MqoPAAAACXBIWXMAAAdiAAAHYgE4epnbAAADAFBMVEVHcEx5rfz30m/8wCROkf9Fiv/7uw1Ejf/+uw/21oWOvPr01YCRufn+NTrBd2z/mp3+Njv/lZj/kpf+NTr+Iyv/b3P/mZyOu/uOvPr+NTr+NTr/oVf/eXz8wC3+PEH9uxD/MTb/V0pGi//52YJDif/214T/lpn/QEX/mZ3+mZb+NTrzvZX/mZz+NTr/NTr/PkP/cnb/lJiPvPqMuvpFi///mp39tVlGiv/314X/LzL9uxD/l5r/Qkb/vg/+NTr/mp07hP9Vkv//mp3+KS7/dnn/mpv/lpj32IX/NDlEi///LzX214WPvPpsq/+PvPqPvP//JCn8ugz+NTpFi///mZz/ugdDiv/314X+NDn+OT78uwpFi///Mjf9NDn+uxCKuP3+uw7/mZyPvPv/mZz/lpj9uxJEi//8uw/9uw/63ID+uxD/cHX/k5ZOkf7/mZz/NDr/mZ3/mZ2PvfuOu/v+NTn/mZz+NTr214X21oBDiv+PvPv/mpxFiv/+NDr/mp3/mp3/mp3/mp3/MziOvPyPvPv32YRYn/r+ug1Gi/9Fi//9uw+OvPslZP/214T61n/+NDn/dHj/MzpFi/+PvPr/l5n/mp1Fiv9Eiv//mp7214X9uxBEiv/9uxD/mZyPvPr9uxD214VCiv/+ug5Bif/214X214VDif9Fiv//Q0j/l5yPvPr/NDn+NTr/mZz/NDj9uhCPvfxEiv+NvPv314REiv9Aiv/214T214T214X+NTr+ug//NDn+uxBEiv/414H/NDj+ug2OvPr214T9ug/414T/cnf/mpz/mZ3/mp3/NTr/mZuPvPqOvPuPvPv21oP/NDr9uxD/mpz9uxCOvPr314SJuf3/mp39uw/21oT/mZz214X42ISPu/v/NTr314T9uxaOvPv/f4L214T/mpz+uxBPkv//mpyPvfv9NDr114WJuv3/uw7/ug/414V3rfz214X/fYGPvfr114X214WPvPr214X40Wr30m7/cnRMlP9Gi/+PvPr9uxH214X/mp3+NjtH0sssAAAA+nRSTlMA29fr57E4MbfPxTAs/QH+/PYI8wjm/DTn7v4D2Qny/BgC8y9U9PjxxQz3AkrQh/Lm9eBT/NkF3/kS9vrxL+rKDQhiDN8lHP1/YR7t/gP3FAUqm85XDz2YUvMY7CVe0QtTP/xOEN1wYJgPx+P054rB4fKEbcnU2XpjSfHR2I2eru3mMUipHwUd5MSEJwI/GZTjQvi+FHi3e0XgjDTvUszqjipCFKbCJJTvL9Vy5KRK8T6mYCaJGm/n1rB3eaufFTsmoa5oK9+Wt/i3Oe19k1Bq5YC92IYv9qFJblczIqq4brTX0sGx1buKpbUdNjRSy8jIzMzM0surx38y45W3/QAABLRpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0n77u/JyBpZD0nVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkJz8+Cjx4OnhtcG1ldGEgeG1sbnM6eD0nYWRvYmU6bnM6bWV0YS8nPgo8cmRmOlJERiB4bWxuczpyZGY9J2h0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMnPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6QXR0cmliPSdodHRwOi8vbnMuYXR0cmlidXRpb24uY29tL2Fkcy8xLjAvJz4KICA8QXR0cmliOkFkcz4KICAgPHJkZjpTZXE+CiAgICA8cmRmOmxpIHJkZjpwYXJzZVR5cGU9J1Jlc291cmNlJz4KICAgICA8QXR0cmliOkNyZWF0ZWQ+MjAyNS0wNS0yMTwvQXR0cmliOkNyZWF0ZWQ+CiAgICAgPEF0dHJpYjpFeHRJZD4xMWZhZTQxOS05MjczLTRlMzMtOGYyYy0zZjRlMjZkN2VjMTA8L0F0dHJpYjpFeHRJZD4KICAgICA8QXR0cmliOkZiSWQ+NTI1MjY1OTE0MTc5NTgwPC9BdHRyaWI6RmJJZD4KICAgICA8QXR0cmliOlRvdWNoVHlwZT4yPC9BdHRyaWI6VG91Y2hUeXBlPgogICAgPC9yZGY6bGk+CiAgIDwvcmRmOlNlcT4KICA8L0F0dHJpYjpBZHM+CiA8L3JkZjpEZXNjcmlwdGlvbj4KCiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0nJwogIHhtbG5zOmRjPSdodHRwOi8vcHVybC5vcmcvZGMvZWxlbWVudHMvMS4xLyc+CiAgPGRjOnRpdGxlPgogICA8cmRmOkFsdD4KICAgIDxyZGY6bGkgeG1sOmxhbmc9J3gtZGVmYXVsdCc+VW50aXRsZWQgZGVzaWduIC0gMTwvcmRmOmxpPgogICA8L3JkZjpBbHQ+CiAgPC9kYzp0aXRsZT4KIDwvcmRmOkRlc2NyaXB0aW9uPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6cGRmPSdodHRwOi8vbnMuYWRvYmUuY29tL3BkZi8xLjMvJz4KICA8cGRmOkF1dGhvcj5NYXRoaWV1IFN0ZW5uaWVyPC9wZGY6QXV0aG9yPgogPC9yZGY6RGVzY3JpcHRpb24+CgogPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9JycKICB4bWxuczp4bXA9J2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8nPgogIDx4bXA6Q3JlYXRvclRvb2w+Q2FudmEgZG9jPURBR29FV19mZ21zIHVzZXI9VUFHV0hOM2tpalEgYnJhbmQ9QkFHV0hEcHJEZEEgdGVtcGxhdGU9PC94bXA6Q3JlYXRvclRvb2w+CiA8L3JkZjpEZXNjcmlwdGlvbj4KPC9yZGY6UkRGPgo8L3g6eG1wbWV0YT4KPD94cGFja2V0IGVuZD0ncic/PuCvPvMAAAy/SURBVHja7N13XBRXHgDwvWJNWPYORECRohgloKILWVCkqUgJoSgoxSBK0VwogjTBgqJAhFMsCIoColiwt9h7rzG201hOzSU5U654d5+buRluUWDbzOzMzuyOb/b9/g0Ln6/vvd/7vd+82YhEMGDA0DUWRzWXfftzz+u7PzUyuE9gJIIgv/0ViqKv934iNiL55i4I0kFHQxbd/dh45IWIEh1F/37XWMZ94+q3cuTzdjq66BMjSXDVVep09JpRTPmlUaXt8s4Jj6IFvY2BfmB1lSYdXWEEU/7jageEgI5eE36miyqUEtKv7hZ8dj+uGHQVOvpM4GXd0sBShIRekCVs+toyKRk9ZJugs7zPfqXprkZHQ0/7Cni6DyhEyOkhlnuFS2/oIqWgo4krvhCq3LdaZbpr0NGC64sFSs+PRKjpIdtGCLSCPS7VQkdDhXmEWxqoNt0J6OhVQdazUWWIdjq6fqEAK9j9CB164mnBTfnFA2Jp0UMsswRW2IgbViO06PKTe29hLXefZCldeugsQU35pVGFCF06um2EkAqbjXsQ+nR0kYDqWd/AKib0gizBTHnxWsLpTkpHXy8UypT3IZ7u5PSQRX8VCF2zgtVCR69mCaNRtzESYUpH178viM29WcqcnnhdCMOeTzbdqejo1YXgP4XzIZ3ulHR0Pfgb3P4q3eiJs0CXry1FdKOjBYDXdL6rpbrS0fVgJ/nkWERnOgr0k6iGSIQF3fIbkCtYBzb0xGfANmxUH6syp6Ohe5eCOt3LpOzoIdsAzfJqj1V1oKOhYNazi/MjEbZ0dDiQT6I275GypyeuADDL+ySXIuzpqOUs4Ka8mOA5ky70kNfAPYk60FzFCR0NPQ1Ys8o3UPt0p0dHLbPA6lF2W41wRU9csRusHOfAGR0tACrTNdAadJp0dAVIF+ryY7mkD98LUpKTcklPvAbSUke4pKPfgXN49ammR/+cLv1TgCY8p6MeAtC1KvEATtc6UNfF10ZySQfqQtmBZil39ESgqnhxfiF39K/Buit+oDqWK3rBd4A9fWs47sDN5lZwGrTWpLjb8Vgu6AWnAXwjpmF/mQNLekjo+ll3gWxGR1XvKSv8SBGlDtrooZbDFbGt56JrwH6nweLNUfkDFJEcqY3+ddYIRSzc/Y1g3m/u1kVbhu/5vkiYAemQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQDumQbsz0yoq83Pr63BslxkavzGv6V41jAOb4/Ifcc0ZFfy+6Roa1R/CmgzOMh96/KRhThKymqcJY6CXRjphKOP4j94RR0GfkqckxLCD4TEUfI6D374FphqzmTqXg6TMOBhDQsQDZphu/Fzi95AlGEo7RJcKm76vBSOP5A3ch0885ktMxWXSJO3/0KofY2NjSb3+2VI1nXH0RS3+MMmoenhDzQZfGfhR5PDlwQH7Uf+/2Vo0vfA1DxwLOPBpscLpDYZfktXr/elRtdHlpe3Cfu0HpDpHN+Yb4ykDtdEz25EalAemFzVGG+a5EGnQs4FB9hY2B6JuTAzca6E/Rocv3+E15JYZJd74+Bvv/G9CjY9ih6ApeD7M80jHZL7n7PjROunzgm36aYaR0TPZlfX+DVnf2/nZxQR5h7wD9Tboz2MCbLx9/OT3bJTs7PSI+To1/ov977OMhIzoWUNP0yN4QcP/4yy6jJa1tYWKWkz0kTuWvVpzpwT6+xBiGY4+DBpj08ektb91vw9rKZbu/cpchWobxEYeePNL3Gj/aIrFuVQkTq8N2ysP+Cy90THbojl5XvPmQ0WrwtpDkxCn94+QewnjC93igR3mRVStRmP1trFKfYRNPdCzAMVpfDWv/IYRy68l9cbeVih+LdsR4wz9/aKOPst6DWG7Sr68Fjl9UtEofPMf4i+CmR9yf5zyOjiaWjxmJ4/i9OkWSPxPAox17nsd1+8puPIn8/EC5HLcYpGgZ5QbzSceC60v6GEL+wWe/w9/E/AmdP3ujhlc6Jovm8jhHIpeM6pDjl3Z0VnX7/skvHQuor9S7fMsw13Y5bjpnXMdPu/8QwLM9mLMDDbm8Y8zlkVH3Lmxv7bHpnF53NeUxb1vsqzo/cId3uuNPnBxnPEgy3Khef1CS45lpHR/4kOcU3xacFPQkNZy6HL83t/MjB/mnn6nUW90u39VccTJ63n9+zXf8mz3d/I9W1Ps5wYQXPU36Dd/RfQl7uRmhfOgYdblymitf9z++41gM23VOLLfuN2aguhxfoCjnUj15p5dPZCu3siaiTyaQ47M7SxpRd1u+5Z4J7Mp4/yJiuVnfkZryS/M6C9klM3kf9Nvh7OQRZHILTTme6df5wcYk/gddy6HdvHjS9ps7g5itc7mcAI6beivKpyMb3u2Vbn7ycXs96hLvQXC29ygyI+lGEY05nqlIcjbHeF7qnqmUO1uQ0pg6fV+s8QjJroisGzWSSG6xQ/HRxim8wm03lFNubEGHnZSHMn2nucp/FtuRVK9DxxDKTQdN7/ysey2vu7rnzLOUs90jQm02Z08yV5GPt6LqRmnI3ZSa0eF85nfbW/dfUXbmwrZrnMVclOzioPF0q9f2LsUVxe+24TPJ7bqdoqWUKc7W3LUUdnEQ2VmNRO49Vel3d+Vv0G2n1GrbzsWEg9phJ5NLRvVyJV7nU5WetcbwV8SuO5agtQXv8dikldAeRpHhJFvUzued8jVKDRGbs7yVMzOP0DisnUwnrFXkdvJdTbJlGLH8hbPSFXX7Rr6m+63URlqPyHNaSe0klYxqB5JMLpqY8rI7B8H438+2ewq9k9pRq1ZSO81uVKe8TuWers2prhzEqxSG8qTarn1oHktMyOitOTS7UR3r3FkvN5S9mBUxLxNi6D1ls4+73MosTPqR7GqDpunnbjYj+pQj4bQbzztdmMrPk8n19BIOA/qu+40T6T9YvTmakZywG/WmknHW1+tHXvSLmJQYBu0Y8yESRvTJxGc10znOeruvRZe+LjWc0T2CuO8ZyZ2Iz+embs76e9fQi+aQJzC8PbI8nRN5nR7fsqRF31W7hOm0i29hJMcJ5Rlr9HlHzYvOkHdlfulvPP2lbj35PPGYZziLeKXb7irX4bKQXQQTOWGGwxdME/FKX6dbr7n4MoNKhnBXwzP0LBd5UfY1PZPO6ra3TMqhK/9gGWElg7vpWy4Kp2j02CalntLtcpj4phlN+VDi6hXPmKD329enyHu6u2am6Po0zX8I3THvRSyf7af/7w6IOUY612vDdf7zcY/pyl2J5RMM8PK8zVPixb7hWAKLB6gnXWjKCc/n+BxDyEXiH6cQdtiPnGLznsckKzZy7wmGeYN44tkNmh321EZWF3/Nt1vTkI8iHXNDvTu9pFatset5O4XlFZGgCDryYa48y0XiU6nrVHa08ldsz4nF6TR2NbIM5zddZLBwDy+/pZC/TIhh/RuXt9Co4d4BuXzcYxJSp7yZ9Un3U8LZb6hh8RKtPZllxNWrm2Hl8ugT49U14ezThB+XcNET8dBa0EweQyYfLOIh3G1sOOoFxR3WIjcj7kbhGX68fA0Qh1Gco01OeD6XD3od4HLxchNq+Z9xspjjDDbdf7uWMcfJw3sN0HTKDg3Z3aiOGOTcB2B6XDbVfk58Q0hp3J3dAc5yThRykv1cxQ5smg+LpzirfaZV3jbnQbX7F5HJJSQ3hARjtyM7u0i2LHPFacWLqWDmuqDRpOdzmnIcnzfWHsSlvpy9HMfTpoO41I9yIMcXXAFw2D0OcyDH8a8A3N2DWhjcEKLI8oOBk9uflNC/90oRmeDRw24S9eGWDWQox03HAUc3j6DfjaKMseAl+ByCbtRI5nJ8JXhZTkK3G0Uds8Fb65M0ezIWOshNL4BXxhfR70ZRhcVWMXD0bEY9GVL5BfAKWXMnNbku67zt3SbwBv0ks24UyZhngHhoPar6pt5AXeT35kwDsVVxWOVulA5yi0y3HVeAbFS0KHWjhjGs200t5rsNmpc2DcSjujyctL3BQxaXMrwvzl1Vt3WwCNSw0kWe6fZiR5rfmrEAN+Dl4UL9vprmJJ8/++Lcr/ymjhOLQI8IBmN+aYH3vLQ/Tdu60l4khNhJL8OZWmT85cKqCVPHDhaLhBL+Lm/uRlHK782el+bn/P+tdBNiGF4gFjQmg9vnDfZ1U5NPuU6RZhh+wLIW15iMWOOzPKfElW7DKI2jAYUf1tha5fVTdVzdpggNW2+DAJ/bxUK0AZe1N2e4uqWYMQx7wKeZuBbm+Wsax5xWuqUIKTKMEKAo5Hqz7vjj+oszpmgKSTOMglEwCoYdAAAEHXWSCbh8mgAAAABJRU5ErkJggg=="
+  }
+}
